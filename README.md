@@ -3,17 +3,16 @@ Intended for anyone who obtains the majority of their trainings from one vendor/
 
 # Initial Setup
 ```
-virtualenv cissp
-source cissp/bin/activate
-pip3 install selenium
-pip3 install python-dateutil
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
 ```
 
 # Getting Started
 - Download chromedriver from  http://chromedriver.chromium.org/downloads
   - Download the version that matches the main version of Chrome you have installed (Click Chrome --> "About Google Chrome")
 - Download CSV report from your vendor/company
-- Ensure `Duration` (minutes), `Learner Completion Date` (ISO 27 date), and `Learning Activity Title` are CSV header titles. If not change the code (or your CSV headers)
+- Ensure `Learning activity - Duration` (minutes), `Completed date` (ISO 27 date), and `Learning activity - Title` are CSV header titles. If not change the code (or your CSV headers)
 - Add a column called `Domain` to CSV file and tag them (Security and Risk Management, Asset Security, Security Architecture and Engineering, Communication and Network Security, Identity and Access Management, Security Assessment and Testing, Security Operations, Software Development Security, or Group B)
 - Replace `USERNAME` and `PASSWORD` with your creds
 - Replace `CSVFILENAME` with the name and location of your CSV file. Store the CSV file in the same directory as the script for ease of use

@@ -13,13 +13,7 @@ from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.keys import Keys
 
-#Location of Chrome Driver after downloading from http://chromedriver.chromium.org/downloads
-#Download the version that matches the main version of Chrome you have installed (Click Chrome --> "About Google Chrome")
-#Windows Example: r"C:\Users\USERNAME\Downloads\chromedriver.exe"
-#MAC Example: r"/Users/USERNAME/Downloads/chromedriver"
-ser = Service(r"/Users/USERNAME/Downloads/chromedriver")
-
-driver = webdriver.Chrome(service=ser)
+driver = webdriver.Firefox()
 driver.get('https://cpe.isc2.org/s/') 
 
 ##Default maximum waiting time for an element/page to load
@@ -30,27 +24,28 @@ listDomains = ["Security and Risk Management", "Asset Security", "Security Archi
 
 ### Login ###
 try:
-    WebDriverWait(driver, delay).until(EC.presence_of_element_located((By.ID, 'signIn__inputForEmail')))
+    WebDriverWait(driver, delay).until(EC.presence_of_element_located((By.ID, 'input-3')))
     print ("Login Page is ready")
 except TimeoutException:
     print ("Login Page - Loading took too much time!")
 
 ## You can automate your creds by uncommenting the following lines and storing them in a separate protected file... or just login manually. The script will wait 60 seconds before timing out
 #creds = secrets()
-username_box = driver.find_element(By.ID, 'signIn__inputForEmail')
+username_box = driver.find_element(By.ID, 'input-3')
 username_box.send_keys("USERNAME")
 
-passwd_box = driver.find_element(By.ID, 'signIn__inputForPassword')
+passwd_box = driver.find_element(By.ID, 'input-7')
 passwd_box.send_keys("PASSWORD")
 
-driver.find_element(By.ID, 'signIn__userSignIn').click()
+#driver.find_element(By.ID, 'signIn__userSignIn').click()
+driver.find_element(By.XPATH, "//button[text() = 'Sign In']").click()
 
 counter = 0
 
 with open('CSVFILENAME.csv') as f:
     reader = csv.DictReader(f, delimiter=',')
     for row in reader:
-        flDuration = float(row['Duration'])
+        flDuration = float(row['Learning activity - Duration'])
 
         #60 minutes = 1 CPE. Let's convert duration minutes to CPEs
         flDuration = flDuration / 60
@@ -61,10 +56,10 @@ with open('CSVFILENAME.csv') as f:
         if flDuration >= .25:
                        
             # Pound sign (windows) or hyphen (unix/linux/osx) will remove leading zeros https://stackoverflow.com/questions/904928/python-strftime-date-without-leading-0
-            dtCompletion = dateutil.parser.parse(row['Learner Completion Date'])
+            dtCompletion = dateutil.parser.parse(row['Completed date'])
             strCompletion = dtCompletion.strftime("%-m/%-d/%Y")
             #strCompletion = dtCompletion.strftime("%#m/%#d/%Y")
-            strTitle = (row['Learning Activity Title'])
+            strTitle = (row['Learning activity - Title'])
             strDomain = (row['Domain'])
             if strDomain not in listDomains:
                 raise NameError('Security domain name {0} is invalid'.format(strDomain))
@@ -87,7 +82,7 @@ with open('CSVFILENAME.csv') as f:
             except TimeoutException:
                 print ("Main CPE page - Loading took too much time!")
 
-             
+            ### Dates ###
             start_date_box = driver.find_element(By.XPATH, strStartDateXPath)
             start_date_box.send_keys(strCompletion)
 
@@ -103,6 +98,19 @@ with open('CSVFILENAME.csv') as f:
                 print ("Continue button is clickable - Loading took too much time!")
 
             driver.find_element(By.XPATH, '//*[@id="continueButton"]').click()
+
+            ### Category Dropdown ###
+            try:
+                WebDriverWait(driver, delay).until(EC.element_to_be_clickable((By.XPATH, '//button//span[text()= "Contributions to the Profession"]')))
+                print ("Category Dropdown is clickable")
+            except TimeoutException:
+                print ("Category Dropdown is clickable - Loading took too much time!")
+
+            driver.find_element(By.XPATH, '//button//span[text()= "Contributions to the Profession"]').click()
+
+            #### Dropdown is viewable, now we can select Education
+            driver.find_element(By.XPATH, '//span[text() = "Education"]').click()
+
 
             ### Category Radio Button ###
             strRadioBtnXPath='//span[text() = "Courses and Seminars - Other"]'
